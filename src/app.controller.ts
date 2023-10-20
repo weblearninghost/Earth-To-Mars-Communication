@@ -1,17 +1,24 @@
-import { Controller, Param, Post, Req } from '@nestjs/common';
+import { Controller, Get } from '@nestjs/common';
 import { AppService } from './app.service';
+import axios from 'axios';
 
 @Controller('/api')
 export class AppController {
   constructor(private readonly appService: AppService) {}
 
-  @Post('/earth-mars-comm/:message')
-  postMessage(@Param('message') message, @Req() req) {
-    const sender = req.headers?.sender;
-    const receiver = req.headers?.receiver;
-    console.log(`Sender:${sender}
-    Receiver:${receiver}
-    `);
-    return this.appService.messageService(message, sender);
+  @Get('/get-all-episodes')
+  getAllEpisodes() {
+    const episodeURL = 'https://rickandmortyapi.com/api/episode';
+    let episodeData: [];
+    axios
+      .get(episodeURL)
+      .then((apiResponse) => {
+        const episodes: [] = apiResponse.data.results;
+        episodeData = [...episodes];
+        this.appService.processAllEpisodes(episodeData);
+      })
+      .catch((err) => {
+        console.log('ERROR OCCURRED:', err);
+      });
   }
 }
